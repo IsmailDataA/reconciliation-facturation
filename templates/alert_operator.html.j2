@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Avoirs à corriger</title></head>
+<body style="margin:0;background:#f4f5f7;font-family:Segoe UI,Arial,sans-serif;color:#1b1f24">
+<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:24px">
+<table width="640" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden">
+  <tr><td style="background:#1c3d6e;color:#fff;padding:20px 24px;font-size:18px;font-weight:600">
+    Contrôle automatique des avoirs — {{ run_date }}</td></tr>
+  <tr><td style="padding:24px;font-size:14px;line-height:1.5">
+    <p>Bonjour {{ operator }},</p>
+    <p>Le contrôle quotidien a relevé <strong>{{ rows|length }} avoir(s)</strong> à corriger dans vos saisies :</p>
+    <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse:collapse;font-size:13px">
+      <tr style="background:#eef1f5;text-align:left">
+        <th>Avoir</th><th>Facture</th><th>Date</th><th style="text-align:right">Montant</th><th>Anomalie</th></tr>
+      {% for r in rows %}
+      <tr style="border-bottom:1px solid #e3e6ea">
+        <td>{{ r.credit_id }}</td><td>{{ r.invoice_id }}</td><td style="white-space:nowrap">{{ r.created_at }}</td>
+        <td style="text-align:right;white-space:nowrap">{{ "%.2f"|format(r.amount)|replace(".",",") }} €</td><td>{{ r.libelle }}</td></tr>
+      {% endfor %}
+    </table>
+    <p style="margin-top:20px">Merci de les corriger avant la prochaine clôture. Ce message est généré automatiquement.</p>
+  </td></tr>
+</table></td></tr></table>
+</body></html>

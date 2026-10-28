@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Récapitulatif avoirs</title></head>
+<body style="margin:0;background:#f4f5f7;font-family:Segoe UI,Arial,sans-serif;color:#1b1f24">
+<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:24px">
+<table width="720" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden">
+  <tr><td style="background:#1c3d6e;color:#fff;padding:20px 24px;font-size:18px;font-weight:600">
+    Récapitulatif quotidien — contrôle des avoirs — {{ run_date }}</td></tr>
+  <tr><td style="padding:24px;font-size:14px;line-height:1.5">
+    <p><strong>{{ n_total }}</strong> avoirs non conformes sur {{ n_avoirs }} contrôlés,
+       répartis sur <strong>{{ n_ops }}</strong> opérateurs. Chaque opérateur a reçu le détail de ses avoirs.</p>
+    <table width="100%" cellpadding="7" cellspacing="0" style="border-collapse:collapse;font-size:13px">
+      <tr style="background:#eef1f5;text-align:left"><th>Opérateur</th>
+        {% for c in columns %}<th style="text-align:right">{{ c }}</th>{% endfor %}</tr>
+      {% for op, vals in rows %}
+      <tr style="border-bottom:1px solid #e3e6ea"><td>{{ op }}</td>
+        {% for v in vals %}<td style="text-align:right">{{ v }}</td>{% endfor %}</tr>
+      {% endfor %}
+    </table>
+  </td></tr>
+</table></td></tr></table>
+</body></html>

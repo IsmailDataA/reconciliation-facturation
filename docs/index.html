@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contrôle facturation — rapport</title>
+<style>
+  :root{--bg:#f6f7f9;--card:#fff;--ink:#0f1720;--ink2:#4a5563;--muted:#7a8494;--line:#e3e6eb;--accent:#2a78d6;--navy:#13294b;--ok:#0a7d32;--ko:#c0352f}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{background:var(--navy);color:#fff;padding:40px 16px 34px}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+  header .eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.75}
+  header h1{margin:6px 0 8px;font-size:30px;line-height:1.2}
+  header p{margin:0;opacity:.85;max-width:720px}
+  header a{color:#9cc4f2}
+  main{padding:28px 0 60px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:26px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+  .kpi .v{font-size:28px;font-weight:700;letter-spacing:-.01em}
+  .kpi .l{color:var(--ink2);font-size:13px}
+  section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:22px;margin-bottom:18px}
+  section h2{margin:0 0 6px;font-size:19px}
+  section .lead{color:var(--ink2);margin:0 0 16px}
+  img{max-width:100%;height:auto;display:block;margin:10px 0 4px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
+  th{color:var(--ink2);font-weight:600;background:#fafbfc}
+  td.n,th.n{text-align:right}
+  .tag{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;font-weight:600}
+  .ok{background:#e4f4ea;color:var(--ok)} .ko{background:#fbe7e6;color:var(--ko)}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+  .flow span{background:#eef3fa;border:1px solid #d6e2f2;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;color:var(--navy)}
+  .flow i{color:var(--muted);font-style:normal}
+  .scroll{overflow-x:auto}
+  footer{color:var(--muted);font-size:13px;text-align:center;padding:10px 16px 40px}
+  footer a{color:var(--accent)}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="eyebrow">Projet data · Qualité & rapprochement</div>
+  <h1>Contrôle automatisé commandes ↔ factures ↔ avoirs</h1>
+  <p>Rapport généré automatiquement le 28/10/2026 sur 50 000 commandes e-commerce
+     (01/07/2026 – 30/09/2026). Données synthétiques réalistes — aucune donnée d'entreprise.
+     <a href="https://github.com/ismaildataa/reconciliation-facturation">Code source sur GitHub →</a></p>
+</div></header>
+<main><div class="wrap">
+
+  <div class="kpis">
+    <div class="kpi"><div class="v">99,10 %</div><div class="l">des commandes rapprochées sans écart</div></div>
+    <div class="kpi"><div class="v">1 096</div><div class="l">anomalies détectées (toutes règles)</div></div>
+    <div class="kpi"><div class="v">26 569 €</div><div class="l">montant à risque identifié</div></div>
+    <div class="kpi"><div class="v">100,0 %</div><div class="l">des anomalies injectées retrouvées (100,0 % de précision)</div></div>
+    <div class="kpi"><div class="v">2 s</div><div class="l">pour tout le pipeline (génération → rapport)</div></div>
+  </div>
+
+  <section>
+    <h2>Le pipeline</h2>
+    <p class="lead">Une seule commande (<code>python run_pipeline.py</code>) enchaîne toutes les étapes ; en production, elle est planifiée chaque jour (Cloud Run + Cloud Scheduler ou GitHub Actions).</p>
+    <div class="flow"><span>Extraction OMS / facturation / avoirs</span><i>→</i><span>11 règles qualité</span><i>→</i><span>Rapprochement SQL</span><i>→</i><span>KPI quotidiens</span><i>→</i><span>Alertes e-mail par opérateur</span><i>→</i><span>Rapport + export Excel</span></div>
+  </section>
+
+  <section>
+    <h2>Évolution du taux d'anomalies</h2>
+    <p class="lead">Suivre la tendance permet de repérer une dérive (nouvelle intégration, changement de process) avant la clôture.</p>
+    <img src="img/taux_ko_quotidien.png" alt="Taux de commandes en anomalie par jour">
+  </section>
+
+  <section>
+    <h2>Où sont les écarts ?</h2>
+    <img src="img/anomalies_par_type.png" alt="Anomalies détectées par type">
+    <img src="img/montant_par_bu.png" alt="Montant à risque par Business Unit">
+  </section>
+
+  <section>
+    <h2>Avoirs : qui accompagner en priorité ?</h2>
+    <p class="lead">196 avoirs non conformes sur 2 946. Chaque opérateur concerné reçoit un e-mail avec le détail de ses avoirs à corriger ; le service facturation reçoit un récapitulatif.</p>
+    <img src="img/avoirs_par_operateur.png" alt="Taux d'avoirs non conformes par opérateur">
+    <p>Exemples d'e-mails générés : <a href="exemples/alerte_operateur.html">alerte opérateur</a> · <a href="exemples/recap_facturation.html">récapitulatif facturation</a></p>
+  </section>
+
+  <section>
+    <h2>Le contrôle est-il fiable ? Mesure objective</h2>
+    <p class="lead">Chaque anomalie a été injectée volontairement et tracée : on mesure ce que le pipeline retrouve (rappel) et s'il signale à tort (précision).
+       150 écarts d'arrondi de ±1 centime ont aussi été injectés : ils sont <strong>correctement ignorés</strong> grâce à la tolérance métier.</p>
+    <div class="scroll"><table>
+      <tr><th>Type d'anomalie</th><th class="n">Injectées</th><th class="n">Détectées</th><th class="n">Rappel</th><th class="n">Précision</th></tr>
+      
+      <tr><td>Doublon facture</td><td class="n">150</td><td class="n">150</td>
+          <td class="n">100.0 %</td><td class="n">100.0 %</td></tr>
+      
+      <tr><td>Ecart montant</td><td class="n">150</td><td class="n">150</td>
+          <td class="n">100.0 %</td><td class="n">100.0 %</td></tr>
+      
+      <tr><td>Tva incoherente</td><td class="n">150</td><td class="n">150</td>
+          <td class="n">100.0 %</td><td class="n">100.0 %</td></tr>
+      
+      <tr><td>Facture manquante</td><td class="n">150</td><td class="n">150</td>
+          <td class="n">100.0 %</td><td class="n">100.0 %</td></tr>
+      
+      <tr><td>Facture orpheline</td><td class="n">150</td><td class="n">150</td>
+          <td class="n">100.0 %</td><td class="n">100.0 %</td></tr>
+      
+      <tr><td>Motif manquant</td><td class="n">123</td><td class="n">123</td>
+          <td class="n">100.0 %</td><td class="n">100.0 %</td></tr>
+      
+      <tr><td>Bu manquante</td><td class="n">75</td><td class="n">75</td>
+          <td class="n">100.0 %</td><td class="n">100.0 %</td></tr>
+      
+      <tr><td>Date incoherente</td><td class="n">75</td><td class="n">75</td>
+          <td class="n">100.0 %</td><td class="n">100.0 %</td></tr>
+      
+      <tr><td>Avoir superieur facture</td><td class="n">46</td><td class="n">46</td>
+          <td class="n">100.0 %</td><td class="n">100.0 %</td></tr>
+      
+      <tr><td>Avoir orphelin</td><td class="n">27</td><td class="n">27</td>
+          <td class="n">100.0 %</td><td class="n">100.0 %</td></tr>
+      
+    </table></div>
+  </section>
+
+  <section>
+    <h2>Règles de qualité des données</h2>
+    <div class="scroll"><table>
+      <tr><th>Règle</th><th>Table</th><th>Sévérité</th><th class="n">Contrôlées</th><th class="n">En échec</th><th>Statut</th></tr>
+      
+      <tr><td>Identifiant de commande unique</td><td>orders</td><td>BLOQUANT</td>
+          <td class="n">50 000</td><td class="n">0</td>
+          <td><span class="tag ok">OK</span></td></tr>
+      
+      <tr><td>Business Unit renseignée</td><td>orders</td><td>MAJEUR</td>
+          <td class="n">50 000</td><td class="n">75</td>
+          <td><span class="tag ko">KO</span></td></tr>
+      
+      <tr><td>Montant de commande strictement positif</td><td>orders</td><td>BLOQUANT</td>
+          <td class="n">50 000</td><td class="n">0</td>
+          <td><span class="tag ok">OK</span></td></tr>
+      
+      <tr><td>Numéro de facture unique</td><td>invoices</td><td>BLOQUANT</td>
+          <td class="n">50 150</td><td class="n">0</td>
+          <td><span class="tag ok">OK</span></td></tr>
+      
+      <tr><td>HT + TVA = TTC (tolérance 2 centimes)</td><td>invoices</td><td>MAJEUR</td>
+          <td class="n">50 150</td><td class="n">150</td>
+          <td><span class="tag ko">KO</span></td></tr>
+      
+      <tr><td>Taux de TVA dans le référentiel (5,5 %, 10 %, 20 %)</td><td>invoices</td><td>MAJEUR</td>
+          <td class="n">50 150</td><td class="n">0</td>
+          <td><span class="tag ok">OK</span></td></tr>
+      
+      <tr><td>Montant d'avoir strictement positif</td><td>credit_notes</td><td>BLOQUANT</td>
+          <td class="n">2 946</td><td class="n">0</td>
+          <td><span class="tag ok">OK</span></td></tr>
+      
+    </table></div>
+  </section>
+
+</div></main>
+<footer>Projet réalisé par <a href="https://ismaildataa.github.io">Ismail Yahyaoui</a> — Data Analyst · Python · SQL · Automatisation</footer>
+</body>
+</html>

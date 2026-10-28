@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contrôle facturation — rapport</title>
+<style>
+  :root{--bg:#f6f7f9;--card:#fff;--ink:#0f1720;--ink2:#4a5563;--muted:#7a8494;--line:#e3e6eb;--accent:#2a78d6;--navy:#13294b;--ok:#0a7d32;--ko:#c0352f}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{background:var(--navy);color:#fff;padding:40px 16px 34px}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+  header .eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.75}
+  header h1{margin:6px 0 8px;font-size:30px;line-height:1.2}
+  header p{margin:0;opacity:.85;max-width:720px}
+  header a{color:#9cc4f2}
+  main{padding:28px 0 60px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:26px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+  .kpi .v{font-size:28px;font-weight:700;letter-spacing:-.01em}
+  .kpi .l{color:var(--ink2);font-size:13px}
+  section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:22px;margin-bottom:18px}
+  section h2{margin:0 0 6px;font-size:19px}
+  section .lead{color:var(--ink2);margin:0 0 16px}
+  img{max-width:100%;height:auto;display:block;margin:10px 0 4px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
+  th{color:var(--ink2);font-weight:600;background:#fafbfc}
+  td.n,th.n{text-align:right}
+  .tag{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;font-weight:600}
+  .ok{background:#e4f4ea;color:var(--ok)} .ko{background:#fbe7e6;color:var(--ko)}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+  .flow span{background:#eef3fa;border:1px solid #d6e2f2;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;color:var(--navy)}
+  .flow i{color:var(--muted);font-style:normal}
+  .scroll{overflow-x:auto}
+  footer{color:var(--muted);font-size:13px;text-align:center;padding:10px 16px 40px}
+  footer a{color:var(--accent)}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="eyebrow">Projet data · Qualité & rapprochement</div>
+  <h1>Contrôle automatisé commandes ↔ factures ↔ avoirs</h1>
+  <p>Rapport généré automatiquement le {{ run_date }} sur {{ "{:,}".format(n_orders).replace(",", " ") }} commandes e-commerce
+     ({{ period }}). Données synthétiques réalistes — aucune donnée d'entreprise.
+     <a href="{{ repo_url }}">Code source sur GitHub →</a></p>
+</div></header>
+<main><div class="wrap">
+
+  <div class="kpis">
+    <div class="kpi"><div class="v">{{ kpi.taux_ok }} %</div><div class="l">des commandes rapprochées sans écart</div></div>
+    <div class="kpi"><div class="v">{{ kpi.n_anomalies }}</div><div class="l">anomalies détectées (toutes règles)</div></div>
+    <div class="kpi"><div class="v">{{ kpi.montant }}</div><div class="l">montant à risque identifié</div></div>
+    <div class="kpi"><div class="v">{{ kpi.rappel }} %</div><div class="l">des anomalies injectées retrouvées ({{ kpi.precision }} % de précision)</div></div>
+    <div class="kpi"><div class="v">{{ kpi.duree }} s</div><div class="l">pour tout le pipeline (génération → rapport)</div></div>
+  </div>
+
+  <section>
+    <h2>Le pipeline</h2>
+    <p class="lead">Une seule commande (<code>python run_pipeline.py</code>) enchaîne toutes les étapes ; en production, elle est planifiée chaque jour (Cloud Run + Cloud Scheduler ou GitHub Actions).</p>
+    <div class="flow"><span>Extraction OMS / facturation / avoirs</span><i>→</i><span>{{ n_rules }} règles qualité</span><i>→</i><span>Rapprochement SQL</span><i>→</i><span>KPI quotidiens</span><i>→</i><span>Alertes e-mail par opérateur</span><i>→</i><span>Rapport + export Excel</span></div>
+  </section>
+
+  <section>
+    <h2>Évolution du taux d'anomalies</h2>
+    <p class="lead">Suivre la tendance permet de repérer une dérive (nouvelle intégration, changement de process) avant la clôture.</p>
+    <img src="img/taux_ko_quotidien.png" alt="Taux de commandes en anomalie par jour">
+  </section>
+
+  <section>
+    <h2>Où sont les écarts ?</h2>
+    <img src="img/anomalies_par_type.png" alt="Anomalies détectées par type">
+    <img src="img/montant_par_bu.png" alt="Montant à risque par Business Unit">
+  </section>
+
+  <section>
+    <h2>Avoirs : qui accompagner en priorité ?</h2>
+    <p class="lead">{{ kpi.n_cn_ko }} avoirs non conformes sur {{ kpi.n_cn }}. Chaque opérateur concerné reçoit un e-mail avec le détail de ses avoirs à corriger ; le service facturation reçoit un récapitulatif.</p>
+    <img src="img/avoirs_par_operateur.png" alt="Taux d'avoirs non conformes par opérateur">
+    <p>Exemples d'e-mails générés : <a href="exemples/alerte_operateur.html">alerte opérateur</a> · <a href="exemples/recap_facturation.html">récapitulatif facturation</a></p>
+  </section>
+
+  <section>
+    <h2>Le contrôle est-il fiable ? Mesure objective</h2>
+    <p class="lead">Chaque anomalie a été injectée volontairement et tracée : on mesure ce que le pipeline retrouve (rappel) et s'il signale à tort (précision).
+       {{ kpi.n_rounding }} écarts d'arrondi de ±1 centime ont aussi été injectés : ils sont <strong>correctement ignorés</strong> grâce à la tolérance métier.</p>
+    <div class="scroll"><table>
+      <tr><th>Type d'anomalie</th><th class="n">Injectées</th><th class="n">Détectées</th><th class="n">Rappel</th><th class="n">Précision</th></tr>
+      {% for r in scores %}
+      <tr><td>{{ r.anomaly_type|replace("_"," ")|capitalize }}</td><td class="n">{{ r.injectees }}</td><td class="n">{{ r.detectees }}</td>
+          <td class="n">{{ r.rappel_pct }} %</td><td class="n">{{ r.precision_pct }} %</td></tr>
+      {% endfor %}
+    </table></div>
+  </section>
+
+  <section>
+    <h2>Règles de qualité des données</h2>
+    <div class="scroll"><table>
+      <tr><th>Règle</th><th>Table</th><th>Sévérité</th><th class="n">Contrôlées</th><th class="n">En échec</th><th>Statut</th></tr>
+      {% for r in quality %}
+      <tr><td>{{ r.description }}</td><td>{{ r.table }}</td><td>{{ r.severity }}</td>
+          <td class="n">{{ "{:,}".format(r.n_checked).replace(",", " ") }}</td><td class="n">{{ r.n_failed }}</td>
+          <td><span class="tag {{ 'ok' if r.status == 'OK' else 'ko' }}">{{ r.status }}</span></td></tr>
+      {% endfor %}
+    </table></div>
+  </section>
+
+</div></main>
+<footer>Projet réalisé par <a href="https://ismaildataa.github.io">Ismail Yahyaoui</a> — Data Analyst · Python · SQL · Automatisation</footer>
+</body>
+</html>
